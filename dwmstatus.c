@@ -46,11 +46,12 @@ settz(char *tzname)
   setenv("TZ", tzname, 1);
 }
 
-void
+int
 mktimes(char *buf, int len, char *fmt, char *tzname)
 {
   time_t tim;
   struct tm *timtm;
+  int warn = 0; // TODO: make this much more general.
 
   bzero(buf, sizeof(buf));
   settz(tzname);
@@ -60,11 +61,19 @@ mktimes(char *buf, int len, char *fmt, char *tzname)
     perror("localtime");
     exit(1);
   }
+  if (timtm->tm_hour == 17 && timtm->tm_min > 45) {
+    warn = 1;
+  }
+  else if (timtm->tm_hour == 18 && timtm->tm_min < 15) {
+    warn = 1;
+  }
 
   if (!strftime(buf, len-1, fmt, timtm)) {
     fprintf(stderr, "strftime == 0\n");
     exit(1);
   }
+
+  return warn;
 }
 
 void
@@ -93,6 +102,7 @@ main(void)
   char tmnyc[128];
   char avgs[128];
   char *status;
+  int warn = 0;
 
   if (!(dpy = XOpenDisplay(NULL))) {
     fprintf(stderr, "dwmstatus: cannot open display.\n");
@@ -101,8 +111,13 @@ main(void)
 
   for (;;sleep(2)) {
     loadavg(avgs, 128);
-    mktimes(tmnyc, 128, "%a, %B %d, %R", tznyc);
-    status = smprintf("[L: %s | %s]", avgs, tmnyc);
+    warn = mktimes(tmnyc, 128, "%a, %B %d, %R", tznyc);
+    if (warn) {
+      status = smprintf("[L: %s | \x04%s\x01]", avgs, tmnyc);
+    }
+    else {
+      status = smprintf("[L: %s | %s]", avgs, tmnyc);      
+    }
                       
     setstatus(status);
     free(status);
