@@ -1,5 +1,15 @@
 /* See LICENSE file for copyright and license details. */
 
+/* KeyRelease event, serial 32, synthetic NO, window 0x1200001, */
+/*     root 0x9c, subw 0x0, time 4478159, (1040,924), root:(1041,940), */
+/*     state 0x0, keycode 122 (keysym 0x1008ff11, XF86AudioLowerVolume), same_screen YES, */
+/*     XLookupString gives 0 bytes:  */
+/*     XFilterEvent returns: False */
+
+#define XK_lowervol 0x1008ff11
+#define XK_raisevol 0x1008ff13
+#define XK_mutevol 0x1008ff12
+
 /* appearance */
 static const char font[]            = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
 
@@ -18,7 +28,7 @@ static const Bool showbar           = True;     /* False means no bar */
 static const Bool topbar            = True;     /* False means bottom bar */
 
 /* tagging */
-static const char *tags[] = { "web", "emacs", "vm", "4", "5", "6", "7", "8", "9" };
+static const char *tags[] = { "web", "emacs", "term", "4", "5", "6", "7", "8", "9" };
 
 static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
@@ -39,7 +49,7 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod1Mask
+#define MODKEY Mod4Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -52,11 +62,23 @@ static const Layout layouts[] = {
 /* commands */
 static const char *dmenucmd[] = { "dmenu_run", "-fn", font, "-nb", colors[0][ColBG], "-nf", colors[0][ColFG],"-sb", colors[1][ColBG], "-sf", colors[1][ColFG], NULL };
 static const char *termcmd[]  = { "uxterm", NULL };
+static const char *volraise[]  = { "volraise", NULL };
+static const char *vollower[]  = { "vollower", NULL };
+static const char *volraise10[]  = { "volraise", "-n", "10", NULL };
+static const char *vollower10[]  = { "vollower", "-n", "10", NULL };
+
+static const char *volmute[]  = { "volmute", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
+
+	{ 0,             XK_lowervol, spawn,          {.v = vollower } },
+	{ 0,             XK_raisevol, spawn,          {.v = volraise } },
+	{ 0,             XK_mutevol,  spawn,           {.v = volmute } },
+	{ MODKEY,             XK_lowervol, spawn,          {.v = vollower10 } },
+	{ MODKEY,             XK_raisevol, spawn,          {.v = volraise10 } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },

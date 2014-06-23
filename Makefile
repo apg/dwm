@@ -41,7 +41,7 @@ dist: clean
 	@gzip dwm-${VERSION}.tar
 	@rm -rf dwm-${VERSION}
 
-install: all
+install: all volumescripts
 	@echo installing executable file to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@cp -f dwm ${DESTDIR}${PREFIX}/bin
@@ -50,6 +50,16 @@ install: all
 	@mkdir -p ${DESTDIR}${MANPREFIX}/man1
 	@sed "s/VERSION/${VERSION}/g" < dwm.1 > ${DESTDIR}${MANPREFIX}/man1/dwm.1
 	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/dwm.1
+
+volumescripts:
+	@echo installing volume scripts
+	@mkdir -p ${DESTDIR}${PREFIX}/bin/
+	@cp -f volmute ${DESTDIR}${PREFIX}/bin
+	@chmod 755 ${DESTDIR}${PREFIX}/bin/volmute
+	@cp -f volraise ${DESTDIR}${PREFIX}/bin
+	@chmod 755 ${DESTDIR}${PREFIX}/bin/volraise
+	@cp -f vollower ${DESTDIR}${PREFIX}/bin
+	@chmod 755 ${DESTDIR}${PREFIX}/bin/vollower
 
 uninstall:
 	@echo removing executable file from ${DESTDIR}${PREFIX}/bin

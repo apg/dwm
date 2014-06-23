@@ -1,0 +1,8 @@
+#!/bin/bash
+# -*- shell-script -*-
+
+# Mutes
+
+( ( amixer get Master | grep '\[on\]' > /dev/null ) && \
+    ( amixer set Master mute  > /dev/null) ) || \
+    ( amixer set Master unmute > /dev/null )

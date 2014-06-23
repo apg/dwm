@@ -1,0 +1,13 @@
+#!/bin/bash
+# -*- shell-script -*-
+
+# find the current volume.
+CURRENT=$(amixer get Master playback | grep '%\]')
+VOLUME=$(echo $CURRENT | cut -d ' ' -f 3)
+MUTED=$(echo $CURRENT | cut -d ' ' -f 6)
+
+amixer set Master playback $(( $VOLUME + 2 )) > /dev/null
+
+if [ "$MUTED" = "[off]" ]; then
+    amixer set Master unmute > /dev/null
+fi
