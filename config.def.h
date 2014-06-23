@@ -61,6 +61,7 @@ static const Layout layouts[] = {
 
 /* commands */
 static const char *dmenucmd[] = { "dmenu_run", "-fn", font, "-nb", colors[0][ColBG], "-nf", colors[0][ColFG],"-sb", colors[1][ColBG], "-sf", colors[1][ColFG], NULL };
+static const char *dmenunetctl[] = { "dmenu_netctl", "-fn", font, "-nb", colors[0][ColBG], "-nf", colors[0][ColFG],"-sb", colors[1][ColBG], "-sf", colors[1][ColFG], NULL };
 static const char *termcmd[]  = { "uxterm", NULL };
 static const char *volraise[]  = { "volraise", NULL };
 static const char *vollower[]  = { "vollower", NULL };
@@ -74,11 +75,12 @@ static Key keys[] = {
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 
-	{ 0,             XK_lowervol, spawn,          {.v = vollower } },
-	{ 0,             XK_raisevol, spawn,          {.v = volraise } },
-	{ 0,             XK_mutevol,  spawn,           {.v = volmute } },
-	{ MODKEY,             XK_lowervol, spawn,          {.v = vollower10 } },
-	{ MODKEY,             XK_raisevol, spawn,          {.v = volraise10 } },
+	{ 0,                            XK_lowervol, spawn,        {.v = vollower } },
+	{ 0,                            XK_raisevol, spawn,        {.v = volraise } },
+	{ 0,                            XK_mutevol,  spawn,        {.v = volmute } },
+	{ MODKEY,                       XK_lowervol, spawn,        {.v = vollower10 } },
+	{ MODKEY,                       XK_raisevol, spawn,        {.v = volraise10 } },
+	{ MODKEY,                       XK_n,      spawn,          {.v = dmenunetctl } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
