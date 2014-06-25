@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <strings.h>
+#include <ctype.h>
 #include <sys/time.h>
 #include <time.h>
 #include <sys/types.h>
@@ -76,11 +77,109 @@ mktimes(char *buf, int len, char *fmt, char *tzname)
   return warn;
 }
 
+int
+readcontents(char *fn, char *buffer, int len)
+{
+  int retval = 1;
+  FILE *tmp;
+  tmp = fopen(fn, "r");
+  if (tmp != NULL) {
+    buffer = fgets(buffer, len, tmp);
+    if (buffer == NULL) {
+      retval = 0;
+    }
+    fclose(tmp);
+  }
+  else {
+    retval = 0;
+  }
+  return retval;
+}
+
 void
 setstatus(char *str)
 {
   XStoreName(dpy, DefaultRootWindow(dpy), str);
   XSync(dpy, False);
+}
+
+static char *batdraw = " .:=#";
+
+void
+drawbattery(char *status, int percent, char *bat, int len)
+{
+  /*  int dis = 0;
+  if (strncasecmp(status, "discharging", 11) == 0) {
+    dis = 1;
+    }*/
+  if (percent == 100) {
+    strncpy(bat, "{####]", len);
+  }
+  else if (percent >= 75) {
+    snprintf(bat, len, "{###%c]", batdraw[(int)((percent - 75) / 5)]);
+  }
+  else if (percent >= 50) {
+    snprintf(bat, len, "{##%c ]", batdraw[(int)((percent - 50) / 5)]);
+  }
+  else if (percent >= 25) {
+    snprintf(bat, len, "{#%c  ]", batdraw[(int)((percent - 25) / 5)]);
+  }
+  else {
+    snprintf(bat, len, "{%c   ]", batdraw[(int)(percent / 5)]);
+  }
+}
+
+void
+power(char *buf, int len)
+{
+  int ok;
+  char status[32];
+  char charge_full[32];
+  char charge_now[32];
+  char battery[32];
+  int cf, cn, percent;
+
+  ok = readcontents("/sys/class/power_supply/BAT0/status", status, 32);
+  if (!ok) {
+    strncpy(buf, "Unknown", 8);
+    return;
+  }
+  else if (strncasecmp(status, "full", 4) == 0) {
+    strncpy(buf, "{####] 100%", len);
+    return;
+  }
+  else {
+    for (cf = 0; cf < 32; cf++) {
+      if (!isalpha(status[cf])) {
+        status[cf] = '\0';
+      }
+    }
+  }
+
+  ok = readcontents("/sys/class/power_supply/BAT0/charge_full",
+                    charge_full, 32);
+  if (!ok) {
+    goto fail;
+  }
+
+  cf = atoi(charge_full);
+  if (cf > 0) {
+    ok = readcontents("/sys/class/power_supply/BAT0/charge_now",
+                      charge_now, 32);
+    if (!ok) {
+      goto fail;
+    }
+    cn = atoi(charge_now);
+    percent = (float) cn * 100 / cf;
+    drawbattery(status, percent, battery, 32);
+
+    snprintf(buf, len, "%s %d%%", battery, percent);
+    return;
+  }
+
+ fail:
+  strncpy(buf, status, len);
+  return;
 }
 
 void
@@ -101,6 +200,7 @@ main(void)
 {
   char tmnyc[128];
   char avgs[128];
+  char pow[128];
   char *status;
   int warn = 0;
 
@@ -109,16 +209,17 @@ main(void)
     return 1;
   }
 
-  for (;;sleep(2)) {
+  for (;;sleep(4)) {
     loadavg(avgs, 128);
     warn = mktimes(tmnyc, 128, "%a, %B %d, %R", tznyc);
+    power(pow, 128);
     if (warn) {
-      status = smprintf("[L: %s | \x04%s\x01]", avgs, tmnyc);
+      status = smprintf("[%s | L: %s | \x04%s\x01]", pow, avgs, tmnyc);
     }
     else {
-      status = smprintf("[L: %s | %s]", avgs, tmnyc);      
+      status = smprintf("[%s | L: %s | %s]", pow, avgs, tmnyc);
     }
-                      
+
     setstatus(status);
     free(status);
   }
