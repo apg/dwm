@@ -108,24 +108,24 @@ static char *batdraw = " .:=#";
 void
 drawbattery(char *status, int percent, char *bat, int len)
 {
-  /*  int dis = 0;
-  if (strncasecmp(status, "discharging", 11) == 0) {
-    dis = 1;
-    }*/
+  char charging = '-';
+  if (strncasecmp(status, "charging", 8) == 0) {
+    charging = '+';
+  }
   if (percent == 100) {
-    strncpy(bat, "{####]", len);
+    strncpy(bat, "{ |####]", len);
   }
   else if (percent >= 75) {
-    snprintf(bat, len, "{###%c]", batdraw[(int)((percent - 75) / 5)]);
+    snprintf(bat, len, "{%c|###%c]", charging, batdraw[(int)((percent - 75) / 5)]);
   }
   else if (percent >= 50) {
-    snprintf(bat, len, "{##%c ]", batdraw[(int)((percent - 50) / 5)]);
+    snprintf(bat, len, "{%c|##%c ]", charging, batdraw[(int)((percent - 50) / 5)]);
   }
   else if (percent >= 25) {
-    snprintf(bat, len, "{#%c  ]", batdraw[(int)((percent - 25) / 5)]);
+    snprintf(bat, len, "{%c|#%c  ]", charging, batdraw[(int)((percent - 25) / 5)]);
   }
   else {
-    snprintf(bat, len, "{%c   ]", batdraw[(int)(percent / 5)]);
+    snprintf(bat, len, "{%c|%c   ]", charging, batdraw[(int)(percent / 5)]);
   }
 }
 
@@ -152,6 +152,7 @@ power(char *buf, int len)
     for (cf = 0; cf < 32; cf++) {
       if (!isalpha(status[cf])) {
         status[cf] = '\0';
+        break;
       }
     }
   }
